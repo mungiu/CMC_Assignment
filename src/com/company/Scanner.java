@@ -11,7 +11,7 @@ package com.company;
 
 import static com.company.TokenKind.*;
 
-// WORKED ON BY YEPPE
+// WORKED ON BY JEPPE
 public class Scanner
 {
 	private SourceFile source;
@@ -49,23 +49,20 @@ public class Scanner
 	
 	private void scanSeparator()
 	{
-		switch( currentChar ) {
-			case '#':
+		if( currentChar == '#' ) {
 				takeIt();
 				while( currentChar != SourceFile.EOL && currentChar != SourceFile.EOT )
 					takeIt();
 					
 				if( currentChar == SourceFile.EOL )
 					takeIt();
-				break;
-				
-			case ' ': case '\n': case '\r': case '\t':
-				takeIt();
-				break;
+		}
+		else {
+			takeIt();
 		}
 	}
 	
-	
+
 	private TokenKind scanToken()
 	{
 		if( isLetter( currentChar ) ) {
@@ -83,17 +80,19 @@ public class Scanner
 			return INTEGERLITERAL;
 			
 		} switch( currentChar ) {
-			case '+': case '-': case '*': case '/': case '%':
+			case '^': case '!': case '*': case '/':
 				takeIt();
+
 				return OPERATOR;
-				
-			case ':':
+
+			case '+': case '-':
 				takeIt();
-				if( currentChar == '=' ) {
+				//must use if statement, switch case only for constants it seems.
+				//to check for ++ and --. If next character is same as previous character
+				if(currentChar == currentSpelling.charAt(currentSpelling.length()))
 					takeIt();
-					return OPERATOR;
-				} else
-					return ERROR;
+
+				return OPERATOR;
 				
 			case ',':
 				takeIt();
@@ -128,7 +127,7 @@ public class Scanner
 		       currentChar == ' ' )
 			scanSeparator();
 
-		// currentSpelling is filled up by scanToke();
+		// currentSpelling is filled up by scanToken();
 		currentSpelling = new StringBuffer( "" );
 		TokenKind kind = scanToken();
 

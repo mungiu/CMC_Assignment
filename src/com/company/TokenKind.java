@@ -8,14 +8,14 @@ package com.company;
 
 public enum TokenKind
 {
-	// INCESTIGATED BY JEPPE
-	// empty onstructor of TokenKind
+	// INVESTIGATED BY JEPPE
+	// Calls empty constructor of TokenKind
 	IDENTIFIER,
 	INTEGERLITERAL,
 	OPERATOR,
 
 	// INVESTIGATED BY ANDREI
-	// TokenKind constructor that takes a string (NOTE THIS IS HARDCODED INSTANTIATION)
+	// Calls TokenKind constructor that takes a string (NOTE THIS IS HARDCODED INSTANTIATION)
 	DECLARE( "declare" ),
 	DO( "do" ),
 	ELSE( "else" ),

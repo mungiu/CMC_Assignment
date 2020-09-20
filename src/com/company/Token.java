@@ -44,7 +44,7 @@ public class Token
 	}
 	
 	
-	public boolean isAssignOperator()
+/*	public boolean isAssignOperator()
 	{
 		if( kind == OPERATOR )
 			return containsOperator( spelling, ASSIGNOPS );
@@ -76,7 +76,7 @@ public class Token
 				return true;
 				
 		return false;
-	}
+	}*/
 	
 	
 /*
@@ -138,7 +138,7 @@ public class Token
 	private static final TokenKind[] KEYWORDS = { DECLARE, DO, ELSE, FI, FUNC, IF, OD, RETURN, SAY, THEN, VAR, WHILE };
 	
 	
-	private static final String ASSIGNOPS[] =
+/*	private static final String ASSIGNOPS[] =
 	{
 		":=",
 	};
@@ -156,5 +156,5 @@ public class Token
 		"*",
 		"/",
 		"%",
-	};
+	};*/
 }
