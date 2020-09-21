@@ -89,7 +89,7 @@ public class Scanner
 				takeIt();
 				//must use if statement, switch case only for constants it seems.
 				//to check for ++ and --. If next character is same as previous character
-				if(currentChar == currentSpelling.charAt(currentSpelling.length()))
+				if(currentChar == currentSpelling.charAt(currentSpelling.length()-1))
 					takeIt();
 
 				return OPERATOR;
@@ -113,6 +113,14 @@ public class Scanner
 			case ')':
 				takeIt();
 				return RIGHTPARAN;
+
+			case '[':
+				takeIt();
+				return LEFTBRACKET;
+
+			case ']':
+				takeIt();
+				return RIGHTBRACKET;
 				
 			case SourceFile.EOT:
 				return EOT;

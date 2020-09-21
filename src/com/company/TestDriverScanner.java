@@ -17,9 +17,9 @@ import javax.swing.*;
  
 public class TestDriverScanner
 {
-	private static final String EXAMPLES_DIR = "c:\\usr\\undervisning\\CMC\\IntLang\\examples";
-	
-	
+	private static final String EXAMPLES_DIR = ".\\src\\com\\company";
+
+
 	public static void main( String args[] )
 	{
 		JFileChooser fc = new JFileChooser( EXAMPLES_DIR );

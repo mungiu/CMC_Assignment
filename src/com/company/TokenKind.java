@@ -34,6 +34,8 @@ public enum TokenKind
 	LEFTPARAN( "(" ),
 	RIGHTPARAN( ")" ),
 	APOSTROPHE("\'"),
+	LEFTBRACKET("["),
+	RIGHTBRACKET("]"),
 	
 	EOT,
 	
@@ -59,3 +61,5 @@ public enum TokenKind
 		return spelling;
 	}
 }
+
+
