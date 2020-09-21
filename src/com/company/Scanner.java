@@ -77,7 +77,7 @@ public class Scanner
 			while( isDigit( currentChar ) )
 				takeIt();
 				
-			return INTEGERLITERAL;
+			return NUMBERS;
 			
 		} switch( currentChar ) {
 			case '^': case '!': case '*': case '/':
@@ -93,6 +93,10 @@ public class Scanner
 					takeIt();
 
 				return OPERATOR;
+
+			case '\'':
+				takeIt();
+				return APOSTROPHE;
 				
 			case ',':
 				takeIt();

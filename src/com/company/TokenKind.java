@@ -11,28 +11,29 @@ public enum TokenKind
 	// INVESTIGATED BY JEPPE
 	// Calls empty constructor of TokenKind
 	IDENTIFIER,
-	INTEGERLITERAL,
+	NUMBERS,
 	OPERATOR,
 
 	// INVESTIGATED BY ANDREI
 	// Calls TokenKind constructor that takes a string (NOTE THIS IS HARDCODED INSTANTIATION)
-	DECLARE( "declare" ),
-	DO( "do" ),
-	ELSE( "else" ),
-	FI( "fi" ),
-	FUNC( "func" ),
+	//Variable types
+	CHAR("Char"),
+	INT("Int"),
+	ARRAY("Array"),
+	FUNC( "Func" ),
+	//-----
 	IF( "if" ),
-	OD( "od" ),
 	RETURN( "return" ),
 	SAY( "say" ),
 	THEN( "then" ),
 	VAR( "var" ),
-	WHILE( "while" ),
+	WHILE( "&" ),
 	
 	COMMA( "," ),
 	SEMICOLON( ";" ),
 	LEFTPARAN( "(" ),
 	RIGHTPARAN( ")" ),
+	APOSTROPHE("\'"),
 	
 	EOT,
 	
