@@ -27,7 +27,6 @@ public enum TokenKind
 	SAY( "say" ),
 	THEN( "then" ),
 	VAR( "var" ),
-	WHILE( "&" ),
 	
 	COMMA( "," ),
 	SEMICOLON( ";" ),
@@ -36,6 +35,8 @@ public enum TokenKind
 	APOSTROPHE("\'"),
 	LEFTBRACKET("["),
 	RIGHTBRACKET("]"),
+	EQUALSIGN("="),
+	WHILE( "&" ),
 	
 	EOT,
 	

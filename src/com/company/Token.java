@@ -135,7 +135,7 @@ public class Token
 	};
 */
 	
-	private static final TokenKind[] KEYWORDS = { CHAR, INT, ARRAY, FUNC, IF, RETURN, SAY, THEN, VAR, WHILE };
+	private static final TokenKind[] KEYWORDS = { CHAR, INT, ARRAY, FUNC, IF, RETURN, SAY, THEN, VAR };
 	
 	
 /*	private static final String ASSIGNOPS[] =

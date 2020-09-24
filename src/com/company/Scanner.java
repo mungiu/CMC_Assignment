@@ -121,6 +121,15 @@ public class Scanner
 			case ']':
 				takeIt();
 				return RIGHTBRACKET;
+
+			case '=':
+				takeIt();
+				return EQUALSIGN;
+
+			case '&':
+				takeIt();
+				return WHILE;
+
 				
 			case SourceFile.EOT:
 				return EOT;
