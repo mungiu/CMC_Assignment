@@ -1,6 +1,0 @@
-Int newInteger [4];
-& newInteger = 4 then
-[
-	newInteger++;
-	newInteger--; 
-]
