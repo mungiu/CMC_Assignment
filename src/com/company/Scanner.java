@@ -26,8 +26,10 @@ public class Scanner
 		
 		currentChar = source.getSource();
 	}
-	
-	
+
+	/**
+	 * Appends the current character to currentSpelling and reads the next character from source imediatelly
+	 */
 	private void takeIt()
 	{
 		currentSpelling.append( currentChar );
@@ -49,16 +51,21 @@ public class Scanner
 	
 	private void scanSeparator()
 	{
-		if( currentChar == '#' ) {
+		switch (currentChar) {
+			case '#':
 				takeIt();
-				while( currentChar != SourceFile.EOL && currentChar != SourceFile.EOT )
+				while (currentChar != SourceFile.EOL && currentChar != SourceFile.EOT)
 					takeIt();
-					
-				if( currentChar == SourceFile.EOL )
+
+				if (currentChar == SourceFile.EOL)
 					takeIt();
-		}
-		else {
-			takeIt();
+				break;
+			case ' ':
+			case '\n':  //	\n matches linefeed.
+			case '\r':  //	\r matches carriage return.
+			case '\t':  //	\t matches horizontal tab.
+				takeIt();
+				break;
 		}
 	}
 	
@@ -108,19 +115,19 @@ public class Scanner
 				
 			case '(':
 				takeIt();
-				return LEFTPARAN;
+				return LEFT_PARANTHESIS;
 				
 			case ')':
 				takeIt();
-				return RIGHTPARAN;
+				return RIGHT_PARANTHESIS;
 
 			case '[':
 				takeIt();
-				return LEFTBRACKET;
+				return LEFT_SQUARE_BRACKET;
 
 			case ']':
 				takeIt();
-				return RIGHTBRACKET;
+				return RIGHT_SQUARE_BRACKET;
 
 			case '=':
 				takeIt();

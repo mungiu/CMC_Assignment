@@ -20,23 +20,27 @@ public enum TokenKind
 	CHAR("Char"),
 	INT("Int"),
 	ARRAY("Array"),
-	FUNC( "Func" ),
-	//-----
+	WHILE( "&" ),
 	IF( "if" ),
+
+	QUOTE("`"),
 	RETURN( "return" ),
 	SAY( "say" ),
 	THEN( "then" ),
 	VAR( "var" ),
 	
-	COMMA( "," ),
-	SEMICOLON( ";" ),
-	LEFTPARAN( "(" ),
-	RIGHTPARAN( ")" ),
+
 	APOSTROPHE("\'"),
-	LEFTBRACKET("["),
-	RIGHTBRACKET("]"),
+	LEFTBRACKET("{"),
+	RIGHTBRACKET("}"),
+	LEFT_SQUARE_BRACKET("["),
+	RIGHT_SQUARE_BRACKET("]"),
+	LEFT_PARANTHESIS( "(" ),
+	RIGHT_PARANTHESIS( ")" ),
+	SEMICOLON( ";" ),
+	COMMA( "," ),
 	EQUALSIGN("="),
-	WHILE( "&" ),
+
 	
 	EOT,
 	

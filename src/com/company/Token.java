@@ -135,26 +135,27 @@ public class Token
 	};
 */
 	
-	private static final TokenKind[] KEYWORDS = { CHAR, INT, ARRAY, FUNC, IF, RETURN, SAY, THEN, VAR };
-	
-	
-/*	private static final String ASSIGNOPS[] =
-	{
-		":=",
-	};
+	private static final TokenKind[] KEYWORDS = { CHAR, INT, ARRAY, WHILE, IF, RETURN, SAY, THEN, VAR };
 
-	
+
+	private static final String ASSIGNOPS[] =
+			{
+					"[",
+					"]"
+			};
+
+
 	private static final String ADDOPS[] =
-	{
-		"+",
-		"-",
-	};
+			{
+					"+",
+					"-",
+			};
 
-	
+
 	private static final String MULOPS[] =
-	{
-		"*",
-		"/",
-		"%",
-	};*/
+			{
+					"*",
+					"/",
+					"%",
+			};
 }

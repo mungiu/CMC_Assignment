@@ -28,8 +28,11 @@ public class SourceFile
 			System.exit( 1 );
 		}
 	}
-	
-	
+
+	/**
+	 * Reads a byte of data from source and converts int into a character
+	 * @return the next byte of data or EOT is end of line is reached
+	 */
 	public char getSource()
 	{
 		try {
