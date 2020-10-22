@@ -16,7 +16,7 @@ public class TestDriverParser {
             Scanner s = new Scanner( in );
             Parser p = new Parser( s );
 
-            p.parseProgram();
+                p.parseProgram();
         }
     }
 }

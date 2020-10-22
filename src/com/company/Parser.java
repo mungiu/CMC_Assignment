@@ -196,10 +196,24 @@ public class Parser {
     }
 
     private Character parseCharacter() {
-        accept(APOSTROPHE);
-        char temp = parseIdentifier().spelling.charAt(0);
-        accept(APOSTROPHE);
-        return new Character(temp);
+        if (currentTerminal.kind == APOSTROPHE) {
+            accept(APOSTROPHE);
+            if (currentTerminal.spelling.length() != 1) {
+                System.out.println("Char expected");
+                return null;
+            }
+
+            Character temp = new Character(currentTerminal.spelling.charAt(0));
+            acceptMultiple(IDENTIFIER, NUMBERS, OPERATOR);
+            accept(APOSTROPHE);
+
+            return temp;
+        } else {
+            accept(APOSTROPHE);
+            System.out.println("Identifier expected");
+            accept(APOSTROPHE);
+            return new Character('?');
+        }
     }
 
     /**
@@ -212,5 +226,16 @@ public class Parser {
             currentTerminal = scan.scan();
         else
             System.out.println("Expected token of kind " + expected);
+    }
+
+    private void acceptMultiple(TokenKind... expected) {
+        for (TokenKind tk : expected) {
+            if (currentTerminal.kind == tk) {
+                currentTerminal = scan.scan();
+                return;
+            }
+        }
+
+        System.out.println("Expected token of kind " + expected);
     }
 }

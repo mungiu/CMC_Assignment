@@ -23,7 +23,6 @@ public enum TokenKind {
     IF("if"),
     FUNC("Func"),
 
-    QUOTE("`"),
     RETURN("return"),
     SAY("say"),
     THEN("then"),
@@ -40,7 +39,6 @@ public enum TokenKind {
     SEMICOLON(";"),
     COMMA(","),
     EQUALSIGN("="),
-    SPACE(" "),
 
     EOT,
 
