@@ -5,161 +5,179 @@
  * 25.09.2009 New package structure
  * 22.09.2006 Original version (based on Example 4.21 in Watt&Brown)
  */
- 
+
 package com.company;
 
 
 import static com.company.TokenKind.*;
 
 // WORKED ON BY JEPPE
-public class Scanner
-{
-	private SourceFile source;
-	
-	private char currentChar;
-	private StringBuffer currentSpelling = new StringBuffer();
-	
-	
-	public Scanner( SourceFile source )
-	{
-		this.source = source;
-		
-		currentChar = source.getSource();
-	}
+public class Scanner {
+    private SourceFile source;
 
-	/**
-	 * Appends the current character to currentSpelling and reads the next character from source imediatelly
-	 */
-	private void takeIt()
-	{
-		currentSpelling.append( currentChar );
-		currentChar = source.getSource();
-	}
-	
-	
-	private boolean isLetter( char c )
-	{
-		return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';
-	}
-	
-	
-	private boolean isDigit( char c )
-	{
-		return c >= '0' && c <= '9';
-	}
-	
-	
-	private void scanSeparator()
-	{
-		switch (currentChar) {
-			case '#':
-				takeIt();
-				while (currentChar != SourceFile.EOL && currentChar != SourceFile.EOT)
-					takeIt();
+    private char currentChar;
+    private StringBuffer currentSpelling = new StringBuffer();
 
-				if (currentChar == SourceFile.EOL)
-					takeIt();
-				break;
-			case ' ':
-			case '\n':  //	\n matches linefeed.
-			case '\r':  //	\r matches carriage return.
-			case '\t':  //	\t matches horizontal tab.
-				takeIt();
-				break;
-		}
-	}
-	
 
-	private TokenKind scanToken()
-	{
-		if( isLetter( currentChar ) ) {
-			takeIt();
-			while( isLetter( currentChar ) || isDigit( currentChar ) )
-				takeIt();
-				
-			return IDENTIFIER;
-			
-		} else if( isDigit( currentChar ) ) {
-			takeIt();
-			while( isDigit( currentChar ) )
-				takeIt();
-				
-			return NUMBERS;
-			
-		} switch( currentChar ) {
-			case '^': case '!': case '*': case '/':
-				takeIt();
+    public Scanner(SourceFile source) {
+        this.source = source;
 
-				return OPERATOR;
+        currentChar = source.getSource();
+    }
 
-			case '+': case '-':
-				takeIt();
-				//must use if statement, switch case only for constants it seems.
-				//to check for ++ and --. If next character is same as previous character
-				if(currentChar == currentSpelling.charAt(currentSpelling.length()-1))
-					takeIt();
+    /**
+     * Appends the current character to currentSpelling and reads the next character from source imediatelly
+     */
+    private void takeIt() {
+        currentSpelling.append(currentChar);
+        currentChar = source.getSource();
+    }
 
-				return OPERATOR;
 
-			case '\'':
-				takeIt();
-				return APOSTROPHE;
-				
-			case ',':
-				takeIt();
-				return COMMA;
-				
-			case ';':
-				takeIt();
-				return SEMICOLON;
-				
-			case '(':
-				takeIt();
-				return LEFT_PARANTHESIS;
-				
-			case ')':
-				takeIt();
-				return RIGHT_PARANTHESIS;
+    private boolean isLetter(char c) {
+        return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';
+    }
 
-			case '[':
-				takeIt();
-				return LEFT_SQUARE_BRACKET;
 
-			case ']':
-				takeIt();
-				return RIGHT_SQUARE_BRACKET;
+    private boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
 
-			case '=':
-				takeIt();
-				return EQUALSIGN;
 
-			case '&':
-				takeIt();
-				return WHILE;
+    private void scanSeparator() {
+        switch (currentChar) {
+            case '#':
+                takeIt();
+                while (currentChar != SourceFile.EOL && currentChar != SourceFile.EOT)
+                    takeIt();
 
-				
-			case SourceFile.EOT:
-				return EOT;
-				
-			default:
-				takeIt();
-				return ERROR;
-		}
-	}
-	
-	
-	public Token scan()
-	{
-		while( currentChar == '#' || currentChar == '\n' ||
-		       currentChar == '\r' || currentChar == '\t' ||
-		       currentChar == ' ' )
-			scanSeparator();
+                if (currentChar == SourceFile.EOL)
+                    takeIt();
+                break;
+            case ' ':
+            case '\n':  //	\n matches linefeed.
+            case '\r':  //	\r matches carriage return.
+            case '\t':  //	\t matches horizontal tab.
+                takeIt();
+                break;
+        }
+    }
 
-		// currentSpelling is filled up by scanToken();
-		currentSpelling = new StringBuffer( "" );
-		TokenKind kind = scanToken();
 
-		// currently the token is generic and the specific type will be decided inside the constructor FUCK UGLY
-		return new Token( kind, new String( currentSpelling ) );
-	}
+    private TokenKind scanToken() {
+        if (isLetter(currentChar)) {
+            takeIt();
+            while (isLetter(currentChar) || isDigit(currentChar))
+                takeIt();
+            switch (currentSpelling.toString()) {
+                case "Int":
+                    return INT;
+                case "Char":
+                    return CHAR;
+                case "Aray":
+                    return ARRAY;
+                case "Func":
+                    return FUNC;
+                case "Return":
+                    return RETURN;
+                case "While":
+                    return WHILE;
+                case "If":
+                    return IF;
+                default:
+                    return IDENTIFIER;
+            }
+
+        } else if (isDigit(currentChar)) {
+            takeIt();
+            while (isDigit(currentChar))
+                takeIt();
+            return NUMBERS;
+
+        }
+        switch (currentChar) {
+            case '^':
+            case '!':
+            case '*':
+            case '/':
+                takeIt();
+
+                return OPERATOR;
+
+            case '+':
+            case '-':
+                takeIt();
+                //must use if statement, switch case only for constants it seems.
+                //to check for ++ and --. If next character is same as previous character
+                if (currentChar == currentSpelling.charAt(currentSpelling.length() - 1))
+                    takeIt();
+
+                return OPERATOR;
+
+            case '\'':
+                takeIt();
+                return APOSTROPHE;
+
+            case ',':
+                takeIt();
+                return COMMA;
+
+            case ';':
+                takeIt();
+                return SEMICOLON;
+
+            case '(':
+                takeIt();
+                return LEFT_PARANTHESIS;
+
+            case ')':
+                takeIt();
+                return RIGHT_PARANTHESIS;
+
+            case '[':
+                takeIt();
+                return LEFT_SQUARE_BRACKET;
+
+            case ']':
+                takeIt();
+                return RIGHT_SQUARE_BRACKET;
+
+            case '=':
+                takeIt();
+                return EQUALSIGN;
+
+            case '&':
+                takeIt();
+                return WHILE;
+            case '{':
+                takeIt();
+                return LEFTBRACKET;
+            case '}':
+                takeIt();
+                return RIGHTBRACKET;
+
+
+            case SourceFile.EOT:
+                return EOT;
+
+            default:
+                takeIt();
+                return ERROR;
+        }
+    }
+
+
+    public Token scan() {
+        while (currentChar == '#' || currentChar == '\n' ||
+                currentChar == '\r' || currentChar == '\t' ||
+                currentChar == ' ')
+            scanSeparator();
+
+        // currentSpelling is filled up by scanToken();
+        currentSpelling = new StringBuffer("");
+        TokenKind kind = scanToken();
+
+        // currently the token is generic and the specific type will be decided inside the constructor FUCK UGLY
+        return new Token(kind, new String(currentSpelling));
+    }
 }

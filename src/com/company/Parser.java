@@ -25,7 +25,6 @@ public class Parser {
 
     public Program parseProgram() {
         CommandList temp = parseCommandList();
-
         if (currentTerminal.kind != EOT)
             System.out.println("Tokens found after end of program");
 
@@ -40,7 +39,6 @@ public class Parser {
             accept(SEMICOLON);
             temp.commandList.add(parseCommand());
         }
-
         return temp;
     }
 
@@ -69,11 +67,22 @@ public class Parser {
                 return new ArrayInst(arrName, arrValue);
             case FUNC:
                 accept(FUNC);
-                Expression funcSignature = parseExpressionComponent();
-                accept(LEFT_SQUARE_BRACKET);
+                Identifier funcName = parseIdentifier();
+                accept(LEFT_PARANTHESIS);
+                ExpressionList args;
+                if (currentTerminal.kind == NUMBERS
+                        || currentTerminal.kind == OPERATOR
+                        || currentTerminal.kind == IDENTIFIER
+                        || currentTerminal.kind == LEFT_PARANTHESIS
+                        || currentTerminal.kind == APOSTROPHE) {
+                    args = parseExpressionList();
+                } else
+                    args = new ExpressionList();
+                accept(RIGHT_PARANTHESIS);
+                accept(LEFTBRACKET);
                 CommandList funcBody = parseCommandList();
-                accept(RIGHT_SQUARE_BRACKET);
-                return new FunctionInst(funcSignature, funcBody);
+                // BY DEFAULT THE RIGHT BRAKET or the SQUARE WILL BE CAUGHT at the end of the Command
+                return new FunctionInst(funcName, args, funcBody);
             case RETURN:
                 accept(RETURN);
                 Expression returnExpression = parseExpressionComponent();
@@ -95,6 +104,14 @@ public class Parser {
             case IDENTIFIER:
                 Expression simpleExpression = parseExpressionComponent();
                 return simpleExpression;
+            case RIGHTBRACKET:
+                accept(RIGHTBRACKET);
+                return null;
+            case RIGHT_SQUARE_BRACKET:
+                accept(RIGHT_SQUARE_BRACKET);
+                return null;
+            case EOT:
+                return null;
             default:
                 System.out.println("Error in command");
                 return null;
