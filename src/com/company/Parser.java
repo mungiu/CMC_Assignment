@@ -4,7 +4,7 @@ import com.company.ast.Command;
 import com.company.ast.CommandList;
 import com.company.ast.Commands.*;
 import com.company.ast.ExpressionList;
-import com.company.ast.Expressions.*;
+import com.company.ast.Commands.Expressions.*;
 import com.company.ast.Program;
 import com.company.ast.Terminals.Character;
 import com.company.ast.Terminals.Identifier;
