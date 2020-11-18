@@ -5,10 +5,8 @@ import com.company.ast.Commands.*;
 import com.company.ast.ExpressionList;
 import com.company.ast.Commands.Expressions.*;
 import com.company.ast.Program;
+import com.company.ast.Terminals.*;
 import com.company.ast.Terminals.Character;
-import com.company.ast.Terminals.Identifier;
-import com.company.ast.Terminals.Numbers;
-import com.company.ast.Terminals.Operator;
 
 public interface Visitor {
     public Object visitProgram(Program p, Object arg);
@@ -56,5 +54,4 @@ public interface Visitor {
     public Object visitNumbers(Numbers numbers, Object arg);
 
     public Object visitOperator(Operator operator, Object arg);
-
 }

@@ -13,12 +13,15 @@ import com.company.ast.Terminals.Operator;
 
 import java.util.Vector;
 
+/**
+ * Not this class has the task of ensuring that semantic rules are followed
+ */
 public class Checker implements Visitor {
     private IdentificationTable idTable = new IdentificationTable();
 
 
-    public void check(Program p) {
-        p.visit(this, null);
+    public void check(Program program) {
+        program.visit(this, null);
     }
 
 
@@ -26,6 +29,7 @@ public class Checker implements Visitor {
         idTable.openScope();
         program.commandList.visit(this, null);
         idTable.closeScope();
+
         return null;
     }
 
@@ -45,22 +49,24 @@ public class Checker implements Visitor {
 
     @Override
     public Object visitArrayInst(ArrayInst arrayInst, Object arg) {
-        arrayInst.name.visit(this, null);
+        String identifier = (String) arrayInst.name.visit(this, null);
+        idTable.enter(identifier, arrayInst);
         arrayInst.value.visit(this, null);
         return null;
     }
 
     @Override
     public Object visitCharInst(CharInst charInst, Object arg) {
-        String id = (String) charInst.name.visit(this, null);
-        idTable.enter(id, charInst);
+        String identifier = (String) charInst.name.visit(this, null);
+        charInst.value.visit(this, null);
+        idTable.enter(identifier, charInst);
         return null;
     }
 
     @Override
     public Object visitFunctionInst(FunctionInst functionInst, Object arg) {
-        String id = (String) functionInst.name.visit(this, null);
-        idTable.enter(id, functionInst);
+        String identifier = (String) functionInst.name.visit(this, null);
+        idTable.enter(identifier, functionInst);
 
         idTable.openScope();
         functionInst.args.visit(this, null);
@@ -72,13 +78,19 @@ public class Checker implements Visitor {
 
     @Override
     public Object visitIntInst(IntInst intInst, Object arg) {
+        String identifier = (String) intInst.name.visit(this, true);
+        idTable.enter(identifier, intInst);
+        intInst.value.visit(this, true);
         return null;
     }
 
     @Override
     public Object visitIfExec(IfExec ifExec, Object arg) {
         ifExec.condition.visit(this, null);
+
+        idTable.openScope();
         ifExec.body.visit(this, null);
+        idTable.closeScope();
 
         return null;
     }
@@ -93,23 +105,27 @@ public class Checker implements Visitor {
     @Override
     public Object visitWhileExec(WhileExec whileExec, Object arg) {
         whileExec.condition.visit(this, null);
+
+        idTable.openScope();
         whileExec.body.visit(this, null);
+        idTable.closeScope();
 
         return null;
-    }
-
-    public Object visitWhileStatement(WhileStatement w, Object arg) {
-
     }
 
     @Override
     public Object visitBinaryExpression(BinaryExpression binaryExpression, Object arg) {
         Type t1 = (Type) binaryExpression.operand1.visit(this, null);
         Type t2 = (Type) binaryExpression.operand2.visit(this, null);
+
         String operator = (String) binaryExpression.operator.visit(this, null);
 
-//        if (operator.equals(":=") && t1.rvalueOnly)
-//            System.out.println("Left-hand side of := must be a variable");
+        if (!operator.equals("+")
+                && !operator.equals("-")
+                && !operator.equals("*")
+                && !operator.equals("/")
+                && !operator.equals("^"))
+            System.out.println("A binary operator can only be + / - / * / '/' / ^");
 
         return new Type(true);
     }
@@ -137,7 +153,9 @@ public class Checker implements Visitor {
 
     @Override
     public Object visitIdentifierExpression(IdentifierExpression identifierExpression, Object arg) {
-        return null;
+        identifierExpression.identifier.visit(this, true);
+
+        return new Type(true);
     }
 
     @Override
@@ -149,17 +167,29 @@ public class Checker implements Visitor {
 
     @Override
     public Object visitReturnExpression(ReturnExpression returnExpression, Object arg) {
-        return null;
+        returnExpression.expression.visit(this, true);
+
+        return new Type(true);
+    }
+
+    public Object visitUnaryExpression(UnaryExpression unaryExpression, Object arg) {
+        String operator = (String) unaryExpression.operator.visit(this, null);
+        unaryExpression.operand.visit(this, null);
+
+        if (!operator.equals("++") && !operator.equals("--"))
+            System.out.println("Only ++ or -- is allowed as unary operator");
+
+        return new Type(true);
     }
 
     @Override
     public Object visitCharacter(Character character, Object arg) {
-        return null;
+        return character.aChar;
     }
 
     @Override
     public Object visitIdentifier(Identifier identifier, Object arg) {
-        return null;
+        return identifier.spelling;
     }
 
     @Override
@@ -169,62 +199,6 @@ public class Checker implements Visitor {
 
     @Override
     public Object visitOperator(Operator operator, Object arg) {
-        return null;
-    }
-
-    public Object visitExpressionStatement(ExpressionStatement e, Object arg) {
-        e.exp.visit(this, null);
-
-        return null;
-    }
-
-    public Object visitVarExpression(VarExpression v, Object arg) {
-        String id = (String) v.name.visit(this, null);
-
-        Declaration d = idTable.retrieve(id);
-        if (d == null)
-            System.out.println(id + " is not declared");
-        else if (!(d instanceof VariableDeclaration))
-            System.out.println(id + " is not a variable");
-        else
-            v.decl = (VariableDeclaration) d;
-
-        return new Type(false);
-    }
-
-
-    public Object visitUnaryExpression(UnaryExpression u, Object arg) {
-        u.operand.visit(this, null);
-        String operator = (String) u.operator.visit(this, null);
-
-        if (!operator.equals("+") && !operator.equals("-"))
-            System.out.println("Only + or - is allowed as unary operator");
-
-        return new Type(true);
-    }
-
-
-    public Object visitExpList(ExpList e, Object arg) {
-        Vector<Type> types = new Vector<Type>();
-
-        for (Expression exp : e.exp)
-            types.add((Type) exp.visit(this, null));
-
-        return types;
-    }
-
-
-    public Object visitIdentifier(Identifier i, Object arg) {
-        return i.spelling;
-    }
-
-
-    public Object visitIntegerLiteral(IntegerLiteral i, Object arg) {
-        return null;
-    }
-
-
-    public Object visitOperator(Operator o, Object arg) {
-        return o.spelling;
+        return operator.spelling;
     }
 }
