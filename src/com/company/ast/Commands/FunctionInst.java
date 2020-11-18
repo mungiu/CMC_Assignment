@@ -1,5 +1,6 @@
 package com.company.ast.Commands;
 
+import com.company.VisitorsPattern.Address;
 import com.company.ast.Command;
 import com.company.ast.CommandList;
 import com.company.ast.ExpressionList;
@@ -8,12 +9,13 @@ import com.company.VisitorsPattern.Visitor;
 
 public class FunctionInst extends Command {
     public Identifier name;
-    public ExpressionList args;
+    public ExpressionList params;
     public CommandList body;
+    public Address adr;
 
-    public FunctionInst(Identifier name, ExpressionList args, CommandList body) {
+    public FunctionInst(Identifier name, ExpressionList params, CommandList body) {
         this.name = name;
-        this.args = args;
+        this.params = params;
         this.body = body;
     }
 

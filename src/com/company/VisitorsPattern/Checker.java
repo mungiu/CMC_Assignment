@@ -69,7 +69,7 @@ public class Checker implements Visitor {
         idTable.enter(identifier, functionInst);
 
         idTable.openScope();
-        functionInst.args.visit(this, null);
+        functionInst.params.visit(this, null);
         functionInst.body.visit(this, null);
         idTable.closeScope();
 
@@ -144,7 +144,7 @@ public class Checker implements Visitor {
             FunctionInst functionInst = (FunctionInst) command;
             callExpression.declaration = functionInst;
 
-            if (functionInst.args.expressionList.size() != types.size())
+            if (functionInst.params.expressionList.size() != types.size())
                 System.out.println("Incorrect number of arguments in call to " + identifier);
         }
 
