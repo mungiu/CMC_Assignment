@@ -36,7 +36,9 @@ public class Checker implements Visitor {
     @Override
     public Object visitCommandList(CommandList commandList, Object arg) {
         for (Command command : commandList.commandList)
-            command.visit(this, null);
+            if (command != null)
+                command.visit(this, null);
+
         return null;
     }
 

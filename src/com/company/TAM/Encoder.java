@@ -21,6 +21,14 @@ public class Encoder implements Visitor {
     private int currentLevel = 0;
 
 
+    /**
+     * Forms and instruction from given parameters and writes it into the next address
+     *
+     * @param op OpCode
+     * @param n  RegisterNumber
+     * @param r  length
+     * @param d  operand
+     */
     private void emit(int op, int n, int r, int d) {
         if (n > 255) {
             System.out.println("Operand too long");
@@ -39,6 +47,12 @@ public class Encoder implements Visitor {
             Machine.code[nextAdr++] = instr;
     }
 
+    /**
+     * Writes the discovered address into its placeholder
+     *
+     * @param adr the placeholder for the address to be discovered
+     * @param d   the discovered address
+     */
     private void patch(int adr, int d) {
         Machine.code[adr].d = d;
     }
@@ -87,7 +101,8 @@ public class Encoder implements Visitor {
         int startDisplacement = ((Address) arg).displacement;
 
         for (Command command : commandList.commandList)
-            arg = command.visit(this, arg);
+            if (command != null)
+                arg = command.visit(this, arg);
 
         Address adr = (Address) arg;
         int size = adr.displacement - startDisplacement;
@@ -110,6 +125,7 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitArrayInst(ArrayInst arrayInst, Object arg) {
+        //TODO - not finalized
         String identifier = (String) arrayInst.name.visit(this, null);
 
         arrayInst.value.visit(this, null);
@@ -119,18 +135,23 @@ public class Encoder implements Visitor {
     @Override
     public Object visitCharInst(CharInst charInst, Object arg) {
         //DECLARATION
-        charInst.adr = (Address) arg;
-        Address adr = new Address((Address) arg, 1);
+        // assigning given address to char instance
+        Address passedInAdr = (Address) arg;
+        charInst.adr = passedInAdr;
+        // Address nextAdr = new Address((Address) arg, 1);
 
         //INSTANTIATION
         //boolean valueNeeded = ((Boolean) arg).booleanValue();
         //Address adr = v.decl.adr;
-        int register = displayRegister(currentLevel, adr.level);
+        // accessing the register of current charInst
+        int register = displayRegister(currentLevel, charInst.adr.level);
+        Character character = (Character) charInst.value.visit(this, null);
 
         //if (valueNeeded)
-        emit(Machine.LOADop, 1, register, adr.displacement);
+        // loading the value from the stack onto the charInst
+        emit(Machine.LOADop, 1, register, charInst.adr.displacement);
 
-        return adr;
+        return passedInAdr;
     }
 
     @Override
@@ -141,12 +162,15 @@ public class Encoder implements Visitor {
 
         Address adr = new Address((Address) arg);
 
+        // making space for parameters?
         int paramSize = ((Integer) functionInst.params.visit(this, adr)).intValue();
         functionInst.params.visit(this, new Address(adr, -paramSize));
 
+        // executing the function body
         functionInst.body.visit(this, new Address(adr, Machine.linkDataSize));
         //functionInst.retExp.visit(this, new Boolean(true));
 
+        // this returns something, but what is method is void?
         emit(Machine.RETURNop, 1, 0, paramSize);
 
         currentLevel--;
@@ -156,7 +180,24 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitIntInst(IntInst intInst, Object arg) {
-        return null;
+        //DECLARATION
+        // assigning given address to char instance
+        Address passedInAdr = (Address) arg;
+        intInst.adr = passedInAdr;
+        // Address nextAdr = new Address((Address) arg, 1);
+
+        //INSTANTIATION
+        //boolean valueNeeded = ((Boolean) arg).booleanValue();
+        //Address adr = v.decl.adr;
+        // accessing the register of current charInst
+        int register = displayRegister(currentLevel, intInst.adr.level);
+        Character character = (Character) intInst.value.visit(this, null);
+
+        //if (valueNeeded)
+        // loading the value from the stack onto the charInst
+        emit(Machine.LOADop, 1, register, intInst.adr.displacement);
+
+        return passedInAdr;
     }
 
     @Override
@@ -183,6 +224,12 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitPrintExec(PrintExec printExec, Object arg) {
+        // TODO ensure use
+        printExec.exp.visit(this, new Boolean(true));
+
+        emit(Machine.CALLop, 0, Machine.PBr, Machine.putintDisplacement);
+        emit(Machine.CALLop, 0, Machine.PBr, Machine.puteolDisplacement);
+
         return null;
     }
 
@@ -205,6 +252,36 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitBinaryExpression(BinaryExpression binaryExpression, Object arg) {
+//        boolean valueNeeded = ((Boolean) arg).booleanValue();
+
+        String operator = (String) binaryExpression.operator.visit(this, null);
+
+//        if (operator.equals(":=")) {
+//            Address adr = (Address) binaryExpression.operand1.visit(this, new Boolean(false));
+//            binaryExpression.operand2.visit(this, new Boolean(true));
+//
+//            int register = displayRegister(currentLevel, adr.level);
+//            emit(Machine.STOREop, 1, register, adr.displacement);
+//
+//            if (valueNeeded)
+//                emit(Machine.LOADop, 1, register, adr.displacement);
+//        } else {
+        binaryExpression.operand1.visit(this, arg);
+        binaryExpression.operand2.visit(this, arg);
+
+//        if (valueNeeded)
+        if (operator.equals("+"))
+            emit(Machine.CALLop, 0, Machine.PBr, Machine.addDisplacement);
+        else if (operator.equals("-"))
+            emit(Machine.CALLop, 0, Machine.PBr, Machine.subDisplacement);
+        else if (operator.equals("*"))
+            emit(Machine.CALLop, 0, Machine.PBr, Machine.multDisplacement);
+        else if (operator.equals("/"))
+            emit(Machine.CALLop, 0, Machine.PBr, Machine.divDisplacement);
+//                else if (op.equals("%"))
+//                    emit(Machine.CALLop, 0, Machine.PBr, Machine.modDisplacement);
+//        }
+
         return null;
     }
 
@@ -245,7 +322,7 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitNumbers(Numbers numbers, Object arg) {
-        return null;
+        return new Integer(numbers.spelling);
     }
 
     @Override
