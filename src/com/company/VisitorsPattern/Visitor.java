@@ -31,6 +31,8 @@ public interface Visitor {
 
     public Object visitWhileExec(WhileExec whileExec, Object arg);
 
+    public Object visitReturnExec(ReturnExec returnExec, Object arg);
+
 
     // EXPRESSIONS
     public Object visitBinaryExpression(BinaryExpression binaryExpression, Object arg);
@@ -40,8 +42,6 @@ public interface Visitor {
     public Object visitIdentifierExpression(IdentifierExpression identifierExpression, Object arg);
 
     public Object visitNumbersExpression(NumbersExpression numbersExpression, Object arg);
-
-    public Object visitReturnExpression(ReturnExpression returnExpression, Object arg);
 
     public Object visitUnaryExpression(UnaryExpression unaryExpression, Object arg);
 

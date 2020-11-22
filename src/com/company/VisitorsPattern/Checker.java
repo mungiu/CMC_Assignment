@@ -73,6 +73,7 @@ public class Checker implements Visitor {
         idTable.openScope();
         functionInst.params.visit(this, null);
         functionInst.body.visit(this, null);
+        functionInst.returnCommand.visit(this, null);
         idTable.closeScope();
 
         return null;
@@ -168,8 +169,8 @@ public class Checker implements Visitor {
     }
 
     @Override
-    public Object visitReturnExpression(ReturnExpression returnExpression, Object arg) {
-        returnExpression.expression.visit(this, true);
+    public Object visitReturnExec(ReturnExec returnExec, Object arg) {
+        returnExec.expression.visit(this, true);
 
         return new Type(true);
     }

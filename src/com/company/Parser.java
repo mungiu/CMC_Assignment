@@ -10,6 +10,7 @@ import com.company.ast.Terminals.Character;
 import com.company.ast.Terminals.Identifier;
 import com.company.ast.Terminals.Numbers;
 import com.company.ast.Terminals.Operator;
+import jdk.nashorn.internal.codegen.CompilerConstants;
 
 import static com.company.TokenKind.*;
 
@@ -81,12 +82,13 @@ public class Parser {
                 accept(RIGHT_PARANTHESIS);
                 accept(LEFTBRACKET);
                 CommandList funcBody = parseCommandList();
+                Command returnCommand = parseCommand();
                 // BY DEFAULT THE RIGHT BRAKET or the SQUARE WILL BE CAUGHT at the end of the Command
-                return new FunctionInst(funcName, args, funcBody);
+                return new FunctionInst(funcName, args, funcBody, returnCommand);
             case RETURN:
                 accept(RETURN);
                 Expression returnExpression = parseExpressionComponent();
-                return new ReturnExpression(returnExpression);
+                return new ReturnExec(returnExpression);
             case WHILE:
                 accept(WHILE);
                 Expression whileCondition = parseExpressionComponent();
@@ -142,8 +144,27 @@ public class Parser {
     private Expression parseExpressionComponent() {
         switch (currentTerminal.kind) {
             case NUMBERS:
-                Numbers temp = parseNumbersExpression();
-                return new NumbersExpression(temp);
+                Numbers operand1 = parseNumbersExpression();
+                if (currentTerminal.kind != OPERATOR)
+                    return new NumbersExpression(operand1);
+                else if (currentTerminal.kind == OPERATOR) {
+                    Operator tempOperator = parseOperator();
+                    Object operand2 = parseExpressionComponent();
+                    if (operand2 instanceof BinaryExpression) {
+                        return new BinaryExpression(
+                                tempOperator,
+                                new NumbersExpression(operand1),
+                                (BinaryExpression) operand2);
+                    } else if (operand2 instanceof CallExpression) {
+                        return new BinaryExpression(
+                                tempOperator,
+                                new NumbersExpression(operand1),
+                                (CallExpression) operand2);
+                    } else return new BinaryExpression(
+                            tempOperator,
+                            new NumbersExpression(operand1),
+                            (NumbersExpression) operand2);
+                }
             case OPERATOR:
                 Operator operator = parseOperator();
                 Expression operand = parseExpressionComponent();

@@ -11,12 +11,15 @@ public class FunctionInst extends Command {
     public Identifier name;
     public ExpressionList params;
     public CommandList body;
+    public Command returnCommand;
+
     public Address adr;
 
-    public FunctionInst(Identifier name, ExpressionList params, CommandList body) {
+    public FunctionInst(Identifier name, ExpressionList params, CommandList body, Command returnCommand) {
         this.name = name;
         this.params = params;
         this.body = body;
+        this.returnCommand = returnCommand;
     }
 
     public Object visit(Visitor visitor, Object arg) {

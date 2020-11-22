@@ -24,22 +24,22 @@ public class Encoder implements Visitor {
     /**
      * Forms and instruction from given parameters and writes it into the next address
      *
-     * @param op OpCode
-     * @param n  RegisterNumber
-     * @param r  length
-     * @param d  operand
+     * @param OpCode OpCode
+     * @param registerNumber
+     * @param length  length
+     * @param operand  operand
      */
-    private void emit(int op, int n, int r, int d) {
-        if (n > 255) {
+    private void emit(int OpCode, int registerNumber, int length, int operand) {
+        if (registerNumber > 255) {
             System.out.println("Operand too long");
-            n = 255;
+            registerNumber = 255;
         }
 
         Instruction instr = new Instruction();
-        instr.op = op;
-        instr.n = n;
-        instr.r = r;
-        instr.d = d;
+        instr.OpCode = OpCode;
+        instr.registerNumber = registerNumber;
+        instr.length = length;
+        instr.operand = operand;
 
         if (nextAdr >= Machine.PB)
             System.out.println("Program too large");
@@ -51,10 +51,10 @@ public class Encoder implements Visitor {
      * Writes the discovered address into its placeholder
      *
      * @param adr the placeholder for the address to be discovered
-     * @param d   the discovered address
+     * @param operand   the discovered address
      */
-    private void patch(int adr, int d) {
-        Machine.code[adr].d = d;
+    private void patch(int adr, int operand) {
+        Machine.code[adr].operand = operand;
     }
 
     private int displayRegister(int currentLevel, int entityLevel) {
@@ -89,7 +89,6 @@ public class Encoder implements Visitor {
     @Override
     public Object visitProgram(Program p, Object arg) {
         currentLevel = 0;
-
         p.commandList.visit(this, new Address());
         emit(Machine.HALTop, 0, 0, 0);
 
@@ -168,7 +167,7 @@ public class Encoder implements Visitor {
 
         // executing the function body
         functionInst.body.visit(this, new Address(adr, Machine.linkDataSize));
-        //functionInst.retExp.visit(this, new Boolean(true));
+        functionInst.returnCommand.visit( this, new Boolean( true ) );
 
         // this returns something, but what is method is void?
         emit(Machine.RETURNop, 1, 0, paramSize);
@@ -191,7 +190,7 @@ public class Encoder implements Visitor {
         //Address adr = v.decl.adr;
         // accessing the register of current charInst
         int register = displayRegister(currentLevel, intInst.adr.level);
-        Character character = (Character) intInst.value.visit(this, null);
+        Integer integer = (Integer) intInst.value.visit(this, null);
 
         //if (valueNeeded)
         // loading the value from the stack onto the charInst
@@ -301,7 +300,7 @@ public class Encoder implements Visitor {
     }
 
     @Override
-    public Object visitReturnExpression(ReturnExpression returnExpression, Object arg) {
+    public Object visitReturnExec(ReturnExec returnExec, Object arg) {
         return null;
     }
 
@@ -327,6 +326,6 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitOperator(Operator operator, Object arg) {
-        return null;
+        return operator.spelling;
     }
 }
