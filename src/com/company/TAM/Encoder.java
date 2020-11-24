@@ -24,21 +24,21 @@ public class Encoder implements Visitor {
     /**
      * Forms and instruction from given parameters and writes it into the next address
      *
-     * @param OpCode OpCode
+     * @param OpCode
+     * @param operandSize
      * @param registerNumber
-     * @param length  length
-     * @param operand  operand
+     * @param operand
      */
-    private void emit(int OpCode, int registerNumber, int length, int operand) {
-        if (registerNumber > 255) {
+    private void emit(int OpCode, int operandSize, int registerNumber, int operand) {
+        if (operandSize > 255) {
             System.out.println("Operand too long");
-            registerNumber = 255;
+            operandSize = 255;
         }
 
         Instruction instr = new Instruction();
         instr.OpCode = OpCode;
+        instr.operandSize = operandSize;
         instr.registerNumber = registerNumber;
-        instr.length = length;
         instr.operand = operand;
 
         if (nextAdr >= Machine.PB)
@@ -50,13 +50,20 @@ public class Encoder implements Visitor {
     /**
      * Writes the discovered address into its placeholder
      *
-     * @param adr the placeholder for the address to be discovered
-     * @param operand   the discovered address
+     * @param adr     the placeholder for the address to be discovered
+     * @param operand the discovered address
      */
     private void patch(int adr, int operand) {
         Machine.code[adr].operand = operand;
     }
 
+    /**
+     * Returns the register at which the entity is located???
+     *
+     * @param currentLevel
+     * @param entityLevel
+     * @return
+     */
     private int displayRegister(int currentLevel, int entityLevel) {
         if (entityLevel == 0)
             return Machine.SBr;
@@ -98,6 +105,9 @@ public class Encoder implements Visitor {
     @Override
     public Object visitCommandList(CommandList commandList, Object arg) {
         int startDisplacement = ((Address) arg).displacement;
+
+        if (commandList.commandList.size() > 0)
+            emit(Machine.PUSHop, 0, 0, commandList.commandList.size());
 
         for (Command command : commandList.commandList)
             if (command != null)
@@ -147,8 +157,10 @@ public class Encoder implements Visitor {
         Character character = (Character) charInst.value.visit(this, null);
 
         //if (valueNeeded)
-        // loading the value from the stack onto the charInst
-        emit(Machine.LOADop, 1, register, charInst.adr.displacement);
+        // saving the current value at the address associated with the current char
+        emit(Machine.STOREop, 1, register, charInst.adr.displacement);
+        // emit(Machine.LOADop, 1, register, charInst.adr.displacement);
+
 
         return passedInAdr;
     }
@@ -167,7 +179,7 @@ public class Encoder implements Visitor {
 
         // executing the function body
         functionInst.body.visit(this, new Address(adr, Machine.linkDataSize));
-        functionInst.returnCommand.visit( this, new Boolean( true ) );
+        functionInst.returnCommand.visit(this, new Boolean(true));
 
         // this returns something, but what is method is void?
         emit(Machine.RETURNop, 1, 0, paramSize);
@@ -190,13 +202,20 @@ public class Encoder implements Visitor {
         //Address adr = v.decl.adr;
         // accessing the register of current charInst
         int register = displayRegister(currentLevel, intInst.adr.level);
-        Integer integer = (Integer) intInst.value.visit(this, null);
 
-        //if (valueNeeded)
-        // loading the value from the stack onto the charInst
-        emit(Machine.LOADop, 1, register, intInst.adr.displacement);
+        // NOTE: I pass the current intInst address so that the binary expression may know
+        // where to store the end result
+        Integer integer = (Integer) intInst.value.visit(this, intInst.adr);
 
-        return passedInAdr;
+        // storing the result of the binary expression in place of operand1
+        emit(Machine.STOREop, 1, register, ((Address) arg).displacement);
+
+//        //if (valueNeeded)
+//        // loading the value from the stack onto the charInst
+//        emit(Machine.LOADop, 1, register, intInst.adr.displacement);
+
+        // incrementing the address so that the next command does not override the current
+        return new Address((Address) arg, 1);
     }
 
     @Override
@@ -251,24 +270,12 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitBinaryExpression(BinaryExpression binaryExpression, Object arg) {
-//        boolean valueNeeded = ((Boolean) arg).booleanValue();
-
         String operator = (String) binaryExpression.operator.visit(this, null);
 
-//        if (operator.equals(":=")) {
-//            Address adr = (Address) binaryExpression.operand1.visit(this, new Boolean(false));
-//            binaryExpression.operand2.visit(this, new Boolean(true));
-//
-//            int register = displayRegister(currentLevel, adr.level);
-//            emit(Machine.STOREop, 1, register, adr.displacement);
-//
-//            if (valueNeeded)
-//                emit(Machine.LOADop, 1, register, adr.displacement);
-//        } else {
+        // NOTE: compared to the book, my first operand will never actually be a variable for storage
         binaryExpression.operand1.visit(this, arg);
         binaryExpression.operand2.visit(this, arg);
 
-//        if (valueNeeded)
         if (operator.equals("+"))
             emit(Machine.CALLop, 0, Machine.PBr, Machine.addDisplacement);
         else if (operator.equals("-"))
@@ -277,9 +284,17 @@ public class Encoder implements Visitor {
             emit(Machine.CALLop, 0, Machine.PBr, Machine.multDisplacement);
         else if (operator.equals("/"))
             emit(Machine.CALLop, 0, Machine.PBr, Machine.divDisplacement);
-//                else if (op.equals("%"))
-//                    emit(Machine.CALLop, 0, Machine.PBr, Machine.modDisplacement);
-//        }
+
+//        int register = displayRegister(currentLevel, ((Address) arg).level);
+//        // storing the result of the binary expression in place of operand1
+//        emit(Machine.STOREop, 1, register, ((Address) arg).displacement);
+
+        //// NOTE: We decided to NOT load the value into the register in here, since we can
+        //// never be sure if the current binary expression is the last one i a possible chain
+        //// instead, the final value is loaded inside the visitIntInst() method
+        //// Loading the stored result onto the stack again?
+        ////        emit(Machine.LOADop, 1, register, ((Address) arg).displacement);
+
 
         return null;
     }
@@ -296,6 +311,13 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitNumbersExpression(NumbersExpression numbersExpression, Object arg) {
+//        boolean valueNeeded = ((Boolean) arg).booleanValue();
+
+        Integer lit = (Integer) numbersExpression.numbers.visit(this, null);
+
+//        if (valueNeeded)
+        emit(Machine.LOADLop, 1, 0, lit.intValue());
+
         return null;
     }
 

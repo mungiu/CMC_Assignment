@@ -33,14 +33,16 @@ public class Parser {
     }
 
     private CommandList parseCommandList() {
-        CommandList temp = new CommandList();
+        CommandList commandList = new CommandList();
 
-        temp.commandList.add(parseCommand());
+        commandList.commandList.add(parseCommand());
         while (currentTerminal.kind == SEMICOLON) {
             accept(SEMICOLON);
-            temp.commandList.add(parseCommand());
+            Command command = parseCommand();
+            if (command != null)
+                commandList.commandList.add(command);
         }
-        return temp;
+        return commandList;
     }
 
     private Command parseCommand() {

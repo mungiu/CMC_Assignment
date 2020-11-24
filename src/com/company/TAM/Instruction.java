@@ -8,8 +8,8 @@ import java.io.IOException;
 public class Instruction {
     public Instruction() {
         OpCode = 0;
-        length = 0;
         registerNumber = 0;
+        operandSize = 0;
         operand = 0;
     }
 
@@ -23,14 +23,14 @@ public class Instruction {
 
     // Represents TAM instructions.
     public int OpCode; // OpCode
-    public int length;  // RegisterNumber
-    public int registerNumber;  // Length
+    public int registerNumber;  // RegisterNumber
+    public int operandSize;  // AKA Length
     public int operand;  // Operand
 
     public void write(DataOutputStream output) throws IOException {
         output.writeInt(OpCode);
-        output.writeInt(length);
         output.writeInt(registerNumber);
+        output.writeInt(operandSize);
         output.writeInt(operand);
     }
 
@@ -38,8 +38,8 @@ public class Instruction {
         Instruction inst = new Instruction();
         try {
             inst.OpCode = input.readInt();
-            inst.length = input.readInt();
             inst.registerNumber = input.readInt();
+            inst.operandSize = input.readInt();
             inst.operand = input.readInt();
             return inst;
         } catch (EOFException s) {
