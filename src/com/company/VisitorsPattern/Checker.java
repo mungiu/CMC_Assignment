@@ -12,6 +12,7 @@ import com.company.ast.Terminals.Numbers;
 import com.company.ast.Terminals.Operator;
 
 import java.util.Vector;
+import java.util.function.Function;
 
 /**
  * Not this class has the task of ensuring that semantic rules are followed
@@ -45,7 +46,9 @@ public class Checker implements Visitor {
     @Override
     public Object visitExpresionList(ExpressionList expressionList, Object arg) {
         for (Expression expression : expressionList.expressionList)
-            expression.visit(this, null);
+            if (expression != null)
+                expression.visit(this, null);
+
         return null;
     }
 
@@ -136,18 +139,22 @@ public class Checker implements Visitor {
     @Override
     public Object visitCallExpression(CallExpression callExpression, Object arg) {
         String identifier = (String) callExpression.name.visit(this, null);
-        Vector<Type> types = (Vector<Type>) (callExpression.args.visit(this, null));
+        Vector<Type> types = null;
+        if (callExpression.declaration instanceof FunctionInst)
+            types = (Vector<Type>) (callExpression.args.visit(this, null));
 
         Command command = idTable.retrieve(identifier);
         if (command == null)
             System.out.println(identifier + " is not declared");
-        else if (!(command instanceof FunctionInst))
-            System.out.println(identifier + " is not a function");
+        else if (!(command instanceof FunctionInst)
+                && !(command instanceof IntInst)
+                && !(command instanceof CharInst)
+                && !(command instanceof ArrayInst))
+            System.out.println(identifier + " is not a call of an instance");
         else {
-            FunctionInst functionInst = (FunctionInst) command;
-            callExpression.declaration = functionInst;
-
-            if (functionInst.params.expressionList.size() != types.size())
+            callExpression.declaration = command;
+            if (command instanceof FunctionInst
+                    && ((FunctionInst) command).params.expressionList.size() != types.size())
                 System.out.println("Incorrect number of arguments in call to " + identifier);
         }
 
@@ -164,13 +171,6 @@ public class Checker implements Visitor {
     @Override
     public Object visitNumbersExpression(NumbersExpression numbersExpression, Object arg) {
         numbersExpression.numbers.visit(this, true);
-
-        return new Type(true);
-    }
-
-    @Override
-    public Object visitReturnExec(ReturnExec returnExec, Object arg) {
-        returnExec.expression.visit(this, true);
 
         return new Type(true);
     }

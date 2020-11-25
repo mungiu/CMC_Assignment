@@ -89,8 +89,8 @@ public class Parser {
                 return new FunctionInst(funcName, args, funcBody, returnCommand);
             case RETURN:
                 accept(RETURN);
-                Expression returnExpression = parseExpressionComponent();
-                return new ReturnExec(returnExpression);
+                Command returnExpression = parseCommand();
+                return returnExpression;
             case WHILE:
                 accept(WHILE);
                 Expression whileCondition = parseExpressionComponent();
@@ -124,8 +124,8 @@ public class Parser {
 
     private ExpressionList parseExpressionList() {
         ExpressionList temp = new ExpressionList();
-        temp.expressionList.add(parseExpressionComponent());
 
+        temp.expressionList.add(parseExpressionComponent());
         while (currentTerminal.kind == COMMA) {
             accept(COMMA);
             temp.expressionList.add(parseExpressionComponent());
@@ -188,7 +188,7 @@ public class Parser {
                     accept(RIGHT_PARANTHESIS);
                     return new CallExpression(name, args);
                 } else
-                    return new IdentifierExpression(name);
+                    return new CallExpression(name);
 
             default:
                 System.out.println("Error in ExpressionComponent");

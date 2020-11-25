@@ -158,34 +158,43 @@ public class Encoder implements Visitor {
 
         //if (valueNeeded)
         // saving the current value at the address associated with the current char
-        emit(Machine.STOREop, 1, register, charInst.adr.displacement);
+        emit(Machine.STOREop, 1, register, ((Address) arg).displacement);
         // emit(Machine.LOADop, 1, register, charInst.adr.displacement);
 
 
-        return passedInAdr;
+        // incrementing the address so that the next command does not override the current
+        return new Address((Address) arg, 1);
     }
 
     @Override
     public Object visitFunctionInst(FunctionInst functionInst, Object arg) {
+        // The scope level and the address (within the code memory) of the function
         functionInst.adr = new Address(currentLevel, nextAdr);
 
         ++currentLevel;
 
+        // adr now contains the address of the stack frame of the function
+        // (one added to the scope level and displacement zero)
         Address adr = new Address((Address) arg);
 
-        // making space for parameters?
+        // first visit to the parameter list to find the size
         int paramSize = ((Integer) functionInst.params.visit(this, adr)).intValue();
+        // second visit to to the parameter list to give all the parameters addresses.
+        // First parameter at offset –size etc.
         functionInst.params.visit(this, new Address(adr, -paramSize));
 
-        // executing the function body
+        // ???? visit the block. Local varables will get addresses starting at displacement 3 etc. ????
         functionInst.body.visit(this, new Address(adr, Machine.linkDataSize));
+        // calculate the return value now on the top of the stack just above the stack frame of the function
         functionInst.returnCommand.visit(this, new Boolean(true));
 
-        // this returns something, but what is method is void?
+        // copies the return value to the base of the current stack frame
+        // minus the size of the parameters (the new top of stack) and returns
         emit(Machine.RETURNop, 1, 0, paramSize);
 
         currentLevel--;
-
+        // arg returned unchanged because the function doesn’t add any data
+        // to the stackframe of the surrounding scope
         return arg;
     }
 
@@ -220,11 +229,11 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitIfExec(IfExec ifExec, Object arg) {
-        //pushing results onto the stack top
         ifExec.condition.visit(this, new Boolean(true));
 
         int jump1Adr = nextAdr; // saving local pointer to the address that comes next
-        emit(Machine.JUMPIFop, 0, Machine.CBr, 0);   //NOTE: able to execute as soon as jump1Adr is patched
+        //NOTE: able to execute as soon as jump1Adr is patched
+        emit(Machine.JUMPIFop, 0, Machine.CBr, 0);
 
         //pushing results onto the stack top
         ifExec.body.visit(this, null);
@@ -301,7 +310,42 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitCallExpression(CallExpression callExpression, Object arg) {
-        return null;
+        // NOTE: compared to the book examples this is made to work for both variable and expression calls
+        Address adr = null;
+        int register;
+        boolean function = callExpression.declaration instanceof FunctionInst;
+        boolean character = callExpression.declaration instanceof CharInst;
+        boolean array = callExpression.declaration instanceof ArrayInst;
+        boolean integer = callExpression.declaration instanceof IntInst;
+
+        if (function) {
+            callExpression.args.visit(this, null);
+            adr = ((FunctionInst) callExpression.declaration).adr;
+            register = displayRegister(currentLevel, adr.level);
+            emit(Machine.CALLop, register, Machine.CB, adr.displacement);
+            emit(Machine.POPop, 0, 0, 1);
+            return null;
+        } else if (character) {
+            adr = ((CharInst) callExpression.declaration).adr;
+            register = displayRegister(currentLevel, adr.level);
+            emit(Machine.LOADop, 1, register, adr.displacement);
+        } else if (array) {
+            adr = ((ArrayInst) callExpression.declaration).adr;
+            register = displayRegister(currentLevel, adr.level);
+            emit(Machine.LOADop, 1, register, adr.displacement);
+        } else if (integer) {
+            adr = ((IntInst) callExpression.declaration).adr;
+            register = displayRegister(currentLevel, adr.level);
+            emit(Machine.LOADop, 1, register, adr.displacement);
+        }
+        if (adr == null)
+            try {
+                throw new Exception("Passed in parameters to" + callExpression.name + "have not been declared");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        return adr;
     }
 
     @Override
@@ -318,11 +362,6 @@ public class Encoder implements Visitor {
 //        if (valueNeeded)
         emit(Machine.LOADLop, 1, 0, lit.intValue());
 
-        return null;
-    }
-
-    @Override
-    public Object visitReturnExec(ReturnExec returnExec, Object arg) {
         return null;
     }
 
