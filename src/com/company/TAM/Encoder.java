@@ -367,6 +367,12 @@ public class Encoder implements Visitor {
 
     @Override
     public Object visitUnaryExpression(UnaryExpression unaryExpression, Object arg) {
+        String op = (String) unaryExpression.operator.visit(this, null);
+        unaryExpression.operand.visit(this, arg);
+
+        if (op.equals("-"))
+            emit(Machine.CALLop, 0, Machine.PBr, Machine.negDisplacement);
+
         return null;
     }
 
